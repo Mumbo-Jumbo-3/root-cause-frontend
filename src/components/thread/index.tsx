@@ -31,6 +31,7 @@ import { FeaturedShowcase } from "../featured/showcase";
 import { toast } from "sonner";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { UserButton } from "@clerk/nextjs";
+import { AppNav } from "@/components/app-nav";
 import {
   Sheet,
   SheetContent,
@@ -339,7 +340,8 @@ export function Thread() {
                 </Button>
               )}
             </div>
-            <div className="flex items-center gap-4 pr-2">
+            <div className="flex items-center gap-3 pr-2">
+              <AppNav />
               <UserButton />
             </div>
           </div>
@@ -384,7 +386,8 @@ export function Thread() {
               </motion.button>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <AppNav className="hidden min-[430px]:flex" />
               {threadId && (
                 <TooltipIconButton
                   size="lg"
