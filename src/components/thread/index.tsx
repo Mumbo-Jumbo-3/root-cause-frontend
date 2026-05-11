@@ -402,8 +402,8 @@ export function Thread() {
               )}
             >
               {!chatStarted && (
-                <div className="flex flex-col items-center gap-3 sm:gap-6">
-                  <div className="flex flex-col items-center gap-2 sm:gap-3">
+                <div className="flex w-full max-w-3xl min-w-0 flex-col items-center gap-3 sm:gap-6">
+                  <div className="flex w-full min-w-0 flex-col items-center gap-2 sm:gap-3">
                     <RootCauseHealthLogo
                       className="size-12 sm:size-16"
                       width={64}
@@ -415,7 +415,7 @@ export function Thread() {
                     <p className="text-muted-foreground text-center text-base sm:text-lg">
                       Get health knowledge from trusted sources
                     </p>
-                    <div className="text-muted-foreground flex w-full min-w-0 max-w-3xl flex-col items-center gap-1 text-center text-xs sm:text-base">
+                    <div className="text-muted-foreground flex w-full min-w-0 flex-col items-center gap-1 text-center text-xs sm:text-base">
                       <p className="break-words">
                         <span>Sources: </span>
                         <a
