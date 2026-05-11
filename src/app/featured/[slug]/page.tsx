@@ -29,7 +29,7 @@ export default async function FeaturedPage({ params }: PageProps) {
     <div className="mx-auto min-h-screen max-w-3xl px-4 py-8">
       <header className="mb-8 flex items-center gap-3">
         <Link
-          href="/"
+          href="/chat"
           className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-4" />

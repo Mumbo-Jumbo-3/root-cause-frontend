@@ -93,18 +93,18 @@ export default async function SharePage({ params }: PageProps) {
     <div className="min-h-screen">
       <header className="flex w-full items-center justify-between gap-3 px-4 py-4">
         <Link
-          href="/"
+          href="/chat"
           className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <RootCauseHealthLogo width={24} height={24} />
           <span className="font-semibold">Root Cause Health</span>
         </Link>
         <Link
-          href="/"
+          href="/chat"
           className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-          New chat
+          Back
         </Link>
       </header>
 

@@ -48,8 +48,8 @@ export default function RootLayout({
           localization={clerkLocalization}
           signInUrl="/login"
           signUpUrl="/register"
-          signInFallbackRedirectUrl="/"
-          signUpFallbackRedirectUrl="/"
+          signInFallbackRedirectUrl="/chat"
+          signUpFallbackRedirectUrl="/chat"
         >
           <ThemeProvider attribute="class" defaultTheme="dark">
             <NuqsAdapter>{children}</NuqsAdapter>

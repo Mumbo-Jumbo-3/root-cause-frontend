@@ -282,7 +282,7 @@ export function Thread() {
           asChild
         >
           <Link
-            href="/history"
+            href="/chat/history"
             aria-label="History"
           >
             <History className="size-4" />

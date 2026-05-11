@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/", label: "Chat", icon: MessageCircle },
+  { href: "/chat", label: "Chat", icon: MessageCircle },
   { href: "/products", label: "Products", icon: ShoppingBag },
 ];
 
@@ -19,8 +19,7 @@ export function AppNav({ className }: { className?: string }) {
       className={cn("flex items-center gap-1", className)}
     >
       {links.map(({ href, label, icon: Icon }) => {
-        const active =
-          href === "/" ? pathname === "/" : pathname.startsWith(href);
+        const active = pathname.startsWith(href);
 
         return (
           <Link

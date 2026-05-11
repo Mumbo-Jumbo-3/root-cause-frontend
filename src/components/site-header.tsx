@@ -7,7 +7,7 @@ export function SiteHeader() {
   return (
     <header className="bg-background sticky top-0 z-20 grid w-full shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-2">
       <Link
-        href="/"
+        href="/chat"
         className="text-muted-foreground hover:text-foreground flex min-w-0 items-center gap-2 justify-self-start text-sm transition-colors"
       >
         <RootCauseHealthLogo
