@@ -2,20 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getAllFeaturedSlugs, getFeaturedQuery } from "@/lib/featured";
+import { fetchFeaturedQuery } from "@/lib/content";
 import { FeaturedTabs } from "@/components/featured/tabs";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateStaticParams() {
-  return getAllFeaturedSlugs().map((slug) => ({ slug }));
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const query = getFeaturedQuery(slug);
+  const query = await fetchFeaturedQuery(slug);
   if (!query) return { title: "Not Found" };
 
   return {
@@ -26,7 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function FeaturedPage({ params }: PageProps) {
   const { slug } = await params;
-  const query = getFeaturedQuery(slug);
+  const query = await fetchFeaturedQuery(slug);
   if (!query) notFound();
 
   return (
@@ -42,7 +38,7 @@ export default async function FeaturedPage({ params }: PageProps) {
       </header>
 
       <FeaturedTabs
-        responseMarkdown={query.responseMarkdown}
+        responseMarkdown={query.response_markdown}
         shareLinks={query.shareLinks}
       />
     </div>

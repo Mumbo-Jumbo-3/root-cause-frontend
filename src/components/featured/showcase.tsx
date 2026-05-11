@@ -1,18 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { featuredQueries } from "@/content/featured";
+import type { FeaturedQueryMeta } from "@/lib/content";
 import { FeaturedCard } from "./card";
 
 export function FeaturedShowcase() {
+  const [items, setItems] = useState<FeaturedQueryMeta[]>([]);
   const [startIndex, setStartIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const visible = 3;
-  const maxStart = Math.max(0, featuredQueries.length - visible);
 
-  if (featuredQueries.length === 0) return null;
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/featured", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: FeaturedQueryMeta[]) => {
+        if (!cancelled) setItems(data);
+      })
+      .catch(() => {
+        if (!cancelled) setItems([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const maxStart = Math.max(0, items.length - visible);
+
+  if (items.length === 0) return null;
 
   const canPrev = startIndex > 0;
   const canNext = startIndex < maxStart;
@@ -29,7 +46,7 @@ export function FeaturedShowcase() {
     setStartIndex((i) => i + 1);
   }
 
-  const visibleCards = featuredQueries.slice(startIndex, startIndex + visible);
+  const visibleCards = items.slice(startIndex, startIndex + visible);
 
   const variants = {
     enter: (d: number) => ({ x: d > 0 ? 80 : -80, opacity: 0 }),

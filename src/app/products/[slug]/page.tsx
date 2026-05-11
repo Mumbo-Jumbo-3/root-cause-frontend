@@ -6,21 +6,17 @@ import { ArrowLeft } from "lucide-react";
 import { AppNav } from "@/components/app-nav";
 import { RootCauseHealthLogo } from "@/components/icons/root-cause-health";
 import { MarkdownText } from "@/components/thread/markdown-text";
-import { getAllProductSlugs, getProduct } from "@/lib/products";
+import { fetchProduct } from "@/lib/content";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-}
-
-export async function generateStaticParams() {
-  return getAllProductSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await fetchProduct(slug);
   if (!product) return { title: "Not Found | Root Cause Health" };
 
   return {
@@ -31,7 +27,7 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: PageProps) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await fetchProduct(slug);
   if (!product) notFound();
 
   return (
@@ -82,7 +78,7 @@ export default async function ProductPage({ params }: PageProps) {
         </section>
 
         <article className="prose-sm">
-          <MarkdownText>{product.responseMarkdown}</MarkdownText>
+          <MarkdownText>{product.response_markdown}</MarkdownText>
         </article>
       </main>
     </div>

@@ -4,14 +4,15 @@ import { UserButton } from "@clerk/nextjs";
 import { AppNav } from "@/components/app-nav";
 import { RootCauseHealthLogo } from "@/components/icons/root-cause-health";
 import { ProductGrid } from "@/components/products/product-grid";
-import { products } from "@/content/products";
+import { fetchProductList } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Products | Root Cause Health",
   description: "Search Root Cause Health supplement product guides.",
 };
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const products = await fetchProductList();
   return (
     <div className="min-h-screen">
       <header className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4">

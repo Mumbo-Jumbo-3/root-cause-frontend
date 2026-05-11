@@ -10,7 +10,7 @@ import {
   CardDescription,
   CardFooter,
 } from "@/components/ui/card";
-import type { FeaturedQueryMeta } from "@/lib/featured";
+import type { FeaturedQueryMeta } from "@/lib/content";
 
 export function FeaturedCard({ meta }: { meta: FeaturedQueryMeta }) {
   return (

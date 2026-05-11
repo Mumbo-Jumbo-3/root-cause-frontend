@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import type { ProductMeta } from "@/lib/products";
+import type { ProductMeta } from "@/lib/content";
 
 function matchesProduct(product: ProductMeta, query: string) {
   const normalizedQuery = query.trim().toLowerCase();
