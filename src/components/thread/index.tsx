@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useStreamContext } from "@/providers/Stream";
 import { useState, FormEvent } from "react";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import { AssistantMessage, AssistantMessageLoading } from "./messages/ai";
 import { StageTimeline } from "./messages/stage-timeline";
 import { HumanMessage } from "./messages/human";
@@ -14,6 +15,8 @@ import { RootCauseHealthLogo } from "../icons/root-cause-health";
 import { TooltipIconButton } from "./tooltip-icon-button";
 import {
   ArrowDown,
+  Copy,
+  ExternalLink,
   LoaderCircle,
   PanelRightOpen,
   PanelRightClose,
@@ -28,6 +31,14 @@ import { FeaturedShowcase } from "../featured/showcase";
 import { toast } from "sonner";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { UserButton } from "@clerk/nextjs";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "../ui/sheet";
 
 function StickyToBottomContent(props: {
   content: ReactNode;
@@ -72,6 +83,41 @@ function ScrollToBottom(props: { className?: string }) {
   );
 }
 
+async function copyTextToClipboard(value: string) {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return;
+    } catch {
+      // Fall through to the textarea strategy for stricter mobile browsers.
+    }
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = value;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.top = "0";
+  textarea.style.left = "0";
+  textarea.style.opacity = "0";
+
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+  textarea.setSelectionRange(0, value.length);
+
+  try {
+    const copied = document.execCommand("copy");
+    if (!copied) throw new Error("Clipboard permission was denied");
+  } finally {
+    textarea.remove();
+  }
+}
+
+function isShareCanceled(error: unknown) {
+  return error instanceof DOMException && error.name === "AbortError";
+}
+
 export function Thread() {
   const [threadId, setThreadId] = useQueryState("threadId");
   const [chatHistoryOpen, setChatHistoryOpen] = useQueryState(
@@ -82,6 +128,12 @@ export function Thread() {
   const [firstTokenReceived, setFirstTokenReceived] = useState(false);
   const [prevMessageCount, setPrevMessageCount] = useState(0);
   const [sharing, setSharing] = useState(false);
+  const [shareSheetOpen, setShareSheetOpen] = useState(false);
+  const [shareTarget, setShareTarget] = useState<{
+    threadId: string;
+    url: string;
+  } | null>(null);
+  const [nativeShareAvailable, setNativeShareAvailable] = useState(false);
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
 
   const stream = useStreamContext();
@@ -89,8 +141,14 @@ export function Thread() {
   const isLoading = stream.isLoading;
   const stageTimeline = stream.stageTimeline;
   const hasStageEvents = stageTimeline.hasAny;
+  const currentShareUrl =
+    shareTarget?.threadId === threadId ? shareTarget.url : null;
 
   const lastError = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    setNativeShareAvailable(typeof navigator.share === "function");
+  }, []);
 
   useEffect(() => {
     if (!stream.error) {
@@ -151,6 +209,11 @@ export function Thread() {
 
   const handleShare = async () => {
     if (!threadId || sharing) return;
+    if (currentShareUrl) {
+      setShareSheetOpen(true);
+      return;
+    }
+
     const firstHuman = messages.find((m) => m.type === "human");
     const firstMessage = firstHuman ? getContentString(firstHuman.content) : "";
     const title = firstMessage.slice(0, 80) || "Health conversation";
@@ -169,8 +232,8 @@ export function Thread() {
       if (!res.ok) throw new Error(`status ${res.status}`);
       const { share_id } = (await res.json()) as { share_id: string };
       const url = `${window.location.origin}/share/${share_id}`;
-      await navigator.clipboard.writeText(url);
-      toast.success("Share link copied", { description: url });
+      setShareTarget({ threadId, url });
+      setShareSheetOpen(true);
     } catch (err) {
       toast.error("Could not create share link", {
         description: err instanceof Error ? err.message : String(err),
@@ -180,13 +243,46 @@ export function Thread() {
     }
   };
 
+  const handleCopyShareUrl = async () => {
+    if (!currentShareUrl) return;
+
+    try {
+      await copyTextToClipboard(currentShareUrl);
+      toast.success("Share link copied", { description: currentShareUrl });
+    } catch (err) {
+      toast.error("Link created, but copying failed", {
+        description:
+          err instanceof Error
+            ? err.message
+            : "Use the visible link to copy it manually.",
+      });
+    }
+  };
+
+  const handleNativeShare = async () => {
+    if (!currentShareUrl || !nativeShareAvailable) return;
+
+    try {
+      await navigator.share({
+        title: "Root Cause Health conversation",
+        url: currentShareUrl,
+      });
+    } catch (err) {
+      if (isShareCanceled(err)) return;
+      toast.error("Link created, but sharing failed", {
+        description:
+          err instanceof Error ? err.message : "Try copying the link instead.",
+      });
+    }
+  };
+
   const chatStarted = !!threadId || !!messages.length;
 
   return (
     <div className="flex h-dvh w-full overflow-hidden">
       <div className="relative hidden lg:flex">
         <motion.div
-          className="absolute z-20 h-full overflow-hidden border-r bg-background"
+          className="bg-background absolute z-20 h-full overflow-hidden border-r"
           style={{ width: 300 }}
           animate={
             isLargeScreen
@@ -249,7 +345,7 @@ export function Thread() {
           </div>
         )}
         {chatStarted && (
-          <div className="sticky top-0 z-20 flex shrink-0 items-center justify-between gap-3 bg-background p-2">
+          <div className="bg-background sticky top-0 z-20 flex shrink-0 items-center justify-between gap-3 p-2">
             <div className="relative flex items-center justify-start gap-2">
               <div className="absolute left-0 z-10">
                 {(!chatHistoryOpen || !isLargeScreen) && (
@@ -293,7 +389,7 @@ export function Thread() {
                 <TooltipIconButton
                   size="lg"
                   className="p-4"
-                  tooltip="Copy share link"
+                  tooltip="Share conversation"
                   variant="ghost"
                   disabled={sharing}
                   onClick={handleShare}
@@ -321,10 +417,10 @@ export function Thread() {
           </div>
         )}
 
-        <StickToBottom className="relative flex-1 min-h-0 overflow-hidden">
+        <StickToBottom className="relative min-h-0 flex-1 overflow-hidden">
           <StickyToBottomContent
             className={cn(
-              "absolute inset-0 overflow-y-scroll px-4 [scrollbar-gutter:stable_both-edges] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [&::-webkit-scrollbar-track]:bg-transparent",
+              "[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 absolute inset-0 overflow-y-scroll px-4 [scrollbar-gutter:stable_both-edges] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent",
               !chatStarted && "flex flex-col items-stretch justify-center",
               chatStarted && "grid grid-rows-[1fr_auto]",
             )}
@@ -396,7 +492,7 @@ export function Thread() {
             footer={
               <div
                 className={cn(
-                  "flex flex-col items-center gap-8 bg-background",
+                  "bg-background flex flex-col items-center gap-8",
                   chatStarted && "sticky bottom-0",
                 )}
               >
@@ -420,7 +516,7 @@ export function Thread() {
                             href="https://expulsia.com/health/peat-index"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="underline hover:text-foreground"
+                            className="hover:text-foreground underline"
                           >
                             Ray Peat
                           </a>
@@ -429,7 +525,7 @@ export function Thread() {
                             href="https://x.com/helios_movement"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="underline hover:text-foreground"
+                            className="hover:text-foreground underline"
                           >
                             @helios_movement
                           </a>
@@ -438,7 +534,7 @@ export function Thread() {
                             href="https://x.com/grimhood"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="underline hover:text-foreground"
+                            className="hover:text-foreground underline"
                           >
                             @grimhood
                           </a>
@@ -447,7 +543,7 @@ export function Thread() {
                             href="https://x.com/aestheticprimal"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="underline hover:text-foreground"
+                            className="hover:text-foreground underline"
                           >
                             @aestheticprimal
                           </a>
@@ -456,7 +552,7 @@ export function Thread() {
                             href="https://x.com/hubermanlab"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="underline hover:text-foreground"
+                            className="hover:text-foreground underline"
                           >
                             @hubermanlab
                           </a>
@@ -465,7 +561,7 @@ export function Thread() {
                             href="https://x.com/foundmyfitness"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="underline hover:text-foreground"
+                            className="hover:text-foreground underline"
                           >
                             @foundmyfitness
                           </a>
@@ -474,7 +570,7 @@ export function Thread() {
                             href="https://x.com/outdoctrination"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="underline hover:text-foreground"
+                            className="hover:text-foreground underline"
                           >
                             @outdoctrination
                           </a>
@@ -491,9 +587,10 @@ export function Thread() {
                 <div className="bg-muted relative z-10 mx-auto mb-8 w-full max-w-3xl rounded-2xl border border-solid shadow-xs transition-all">
                   <form
                     onSubmit={handleSubmit}
-                    className="mx-auto grid max-w-3xl grid-rows-[1fr_auto] gap-2"
+                    className="mx-auto flex max-w-3xl flex-col"
                   >
                     <textarea
+                      rows={1}
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={(e) => {
@@ -510,10 +607,10 @@ export function Thread() {
                         }
                       }}
                       placeholder="Type your message..."
-                      className="field-sizing-content resize-none border-none bg-transparent p-3.5 pb-0 shadow-none ring-0 outline-none focus:ring-0 focus:outline-none"
+                      className="field-sizing-content max-h-36 min-h-10 resize-none border-none bg-transparent px-3.5 pt-3.5 pb-1 leading-6 shadow-none ring-0 outline-none focus:ring-0 focus:outline-none"
                     />
 
-                    <div className="flex items-center gap-6 p-2 pt-4">
+                    <div className="flex items-center gap-6 p-2 pt-1">
                       {stream.isLoading ? (
                         <Button
                           key="stop"
@@ -540,6 +637,69 @@ export function Thread() {
           />
         </StickToBottom>
       </motion.div>
+
+      <Sheet
+        open={shareSheetOpen && !!currentShareUrl}
+        onOpenChange={setShareSheetOpen}
+      >
+        <SheetContent
+          side="bottom"
+          className="mx-auto w-full max-w-lg gap-5 rounded-t-xl border-x"
+        >
+          <SheetHeader className="pr-12">
+            <SheetTitle>Share conversation</SheetTitle>
+            <SheetDescription>
+              Anyone with this link can view this conversation.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="px-4">
+            <Input
+              value={currentShareUrl ?? ""}
+              readOnly
+              className="font-mono text-xs sm:text-sm"
+              onFocus={(e) => e.currentTarget.select()}
+            />
+          </div>
+
+          <SheetFooter className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <Button
+              type="button"
+              onClick={handleCopyShareUrl}
+              className="w-full"
+            >
+              <Copy className="size-4" />
+              Copy link
+            </Button>
+            {nativeShareAvailable && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleNativeShare}
+                className="w-full"
+              >
+                <Share2 className="size-4" />
+                Share
+              </Button>
+            )}
+            <Button
+              asChild
+              type="button"
+              variant="outline"
+              className="w-full"
+            >
+              <a
+                href={currentShareUrl ?? undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ExternalLink className="size-4" />
+                Open
+              </a>
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

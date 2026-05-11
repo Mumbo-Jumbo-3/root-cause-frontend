@@ -115,8 +115,11 @@ function messageContentToText(content: Message["content"]): string {
   if (typeof content === "string") return content;
   if (!Array.isArray(content)) return "";
   return content
-    .filter((c): c is { type: "text"; text: string } =>
-      typeof c === "object" && c !== null && (c as { type?: string }).type === "text",
+    .filter(
+      (c): c is { type: "text"; text: string } =>
+        typeof c === "object" &&
+        c !== null &&
+        (c as { type?: string }).type === "text",
     )
     .map((c) => c.text)
     .join("");
@@ -223,7 +226,10 @@ function useAgentStream(config: {
                 setMessages((prev) => {
                   if (!seenToken) {
                     seenToken = true;
-                    streamLog("first token", { assistantId, chars: chunk.length });
+                    streamLog("first token", {
+                      assistantId,
+                      chars: chunk.length,
+                    });
                     return [
                       ...prev,
                       { id: assistantId, type: "ai", content: chunk },
@@ -308,17 +314,17 @@ function StreamSession({
   apiUrl: string;
 }) {
   const [threadId, setThreadId] = useQueryState("threadId");
-  const { getThreads, setThreads } = useThreads();
+  const { refreshThreads } = useThreads();
 
   const onThreadId = useCallback(
     (id: string) => {
       setThreadId(id);
       // small delay so backend's create has committed before listing
       setTimeout(() => {
-        getThreads().then(setThreads).catch(console.error);
+        refreshThreads({ force: true, silent: true }).catch(console.error);
       }, 500);
     },
-    [getThreads, setThreads, setThreadId],
+    [refreshThreads, setThreadId],
   );
 
   const stream = useAgentStream({ apiUrl, threadId, onThreadId });
@@ -353,8 +359,8 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
   if (!apiUrl) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center p-4">
-        <div className="max-w-md rounded-lg border bg-background p-6 text-sm text-muted-foreground">
-          <p className="font-semibold text-foreground">Configuration missing</p>
+        <div className="bg-background text-muted-foreground max-w-md rounded-lg border p-6 text-sm">
+          <p className="text-foreground font-semibold">Configuration missing</p>
           <p className="mt-2">
             Set <code>NEXT_PUBLIC_API_URL</code> in the deployment environment.
           </p>
