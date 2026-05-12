@@ -4,8 +4,8 @@ import { IngestibleGrid } from "@/components/ingestibles/ingestible-grid";
 import { fetchIngestibleList } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Ingestibles | Root Cause Health",
-  description: "Search Root Cause Health ingestible guides.",
+  title: "Ingestibles | Root Cause",
+  description: "Search Root Cause ingestible guides.",
 };
 
 export default async function IngestiblesPage() {

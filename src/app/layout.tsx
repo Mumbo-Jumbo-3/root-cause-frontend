@@ -18,19 +18,19 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   ),
-  title: "Root Cause Health",
-  description: "AI health agent by Root Cause Health",
+  title: "Root Cause",
+  description: "AI health agent",
   openGraph: {
-    siteName: "Root Cause Health",
+    siteName: "Root Cause",
     type: "website",
-    title: "Root Cause Health",
-    description: "AI health agent by Root Cause Health",
+    title: "Root Cause",
+    description: "AI health agent",
     images: [{ url: "/logo.png", width: 512, height: 512 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Root Cause Health",
-    description: "AI health agent by Root Cause Health",
+    title: "Root Cause",
+    description: "AI health agent",
     images: ["/logo.png"],
   },
 };

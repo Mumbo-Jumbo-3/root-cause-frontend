@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!query) return { title: "Not Found" };
 
   return {
-    title: `${query.query} | Root Cause Health`,
+    title: `${query.query} | Root Cause`,
     description: query.description,
   };
 }

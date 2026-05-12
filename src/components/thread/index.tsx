@@ -12,7 +12,7 @@ import { StageTimeline } from "./messages/stage-timeline";
 import { HumanMessage } from "./messages/human";
 import { DO_NOT_RENDER_ID_PREFIX } from "@/lib/ensure-tool-responses";
 import type { Message } from "@/lib/agent-types";
-import { RootCauseHealthLogo } from "../icons/root-cause-health";
+import { RootCauseLogo } from "../icons/root-cause";
 import { TooltipIconButton } from "./tooltip-icon-button";
 import {
   ArrowDown,
@@ -243,7 +243,7 @@ export function Thread() {
 
     try {
       await navigator.share({
-        title: "Root Cause Health conversation",
+        title: "Root Cause conversation",
         url: currentShareUrl,
       });
     } catch (err) {
@@ -261,7 +261,7 @@ export function Thread() {
     <div className="flex h-dvh w-full flex-col overflow-hidden">
       <SiteHeader />
 
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-black px-4 py-1.5">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b-2 border-gray-500 px-4 py-1.5">
         <Button
           variant="ghost"
           size="sm"
@@ -401,13 +401,13 @@ export function Thread() {
               {!chatStarted && (
                 <div className="flex w-full max-w-3xl min-w-0 flex-col items-center gap-3 sm:gap-6">
                   <div className="flex w-full min-w-0 flex-col items-center gap-2 sm:gap-3">
-                    <RootCauseHealthLogo
+                    <RootCauseLogo
                       className="size-12 sm:size-16"
                       width={64}
                       height={64}
                     />
                     <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-                      Root Cause Health
+                      Root Cause
                     </h1>
                     <p className="text-muted-foreground text-center text-base sm:text-lg">
                       Get health knowledge from trusted sources

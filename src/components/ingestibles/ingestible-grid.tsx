@@ -42,7 +42,7 @@ export function IngestibleGrid({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search ingestibles..."
-          className="h-11 pl-9 placeholder:text-gray-300"
+          className="h-11 border-2 border-gray-500 pl-9 placeholder:text-gray-300"
         />
       </div>
 

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { ReadOnlyMessages } from "@/components/thread/messages/read-only";
-import { RootCauseHealthLogo } from "@/components/icons/root-cause-health";
+import { RootCauseLogo } from "@/components/icons/root-cause";
 import type { Message } from "@/lib/agent-types";
 
 interface PageProps {
@@ -36,22 +36,22 @@ async function fetchShare(id: string): Promise<ShareRow | null> {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const row = await fetchShare(id);
-  if (!row) return { title: "Not Found | Root Cause Health" };
+  if (!row) return { title: "Not Found | Root Cause" };
 
   const title = row.title || "Health conversation";
   const description =
-    row.first_message.slice(0, 200) || "A shared conversation from Root Cause Health.";
+    row.first_message.slice(0, 200) || "A shared conversation from Root Cause.";
   const imagePath = `/share/${id}/opengraph-image`;
 
   return {
-    title: `${title} | Root Cause Health`,
+    title: `${title} | Root Cause`,
     description,
     openGraph: {
       title,
       description,
       type: "article",
       url: `/share/${id}`,
-      siteName: "Root Cause Health",
+      siteName: "Root Cause",
       images: [{ url: imagePath, width: 1200, height: 630, alt: title }],
     },
     twitter: {
@@ -96,8 +96,8 @@ export default async function SharePage({ params }: PageProps) {
           href="/chat"
           className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          <RootCauseHealthLogo width={24} height={24} />
-          <span className="font-semibold">Root Cause Health</span>
+          <RootCauseLogo width={24} height={24} />
+          <span className="font-semibold">Root Cause</span>
         </Link>
         <Link
           href="/chat"

@@ -3,7 +3,7 @@ import path from "node:path";
 import { ImageResponse } from "next/og";
 
 export const runtime = "nodejs";
-export const alt = "Root Cause Health conversation";
+export const alt = "Root Cause conversation";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -42,7 +42,7 @@ export default async function OpengraphImage({
 }) {
   const { id } = await params;
   const [row, logoDataUrl] = await Promise.all([fetchShare(id), loadLogoDataUrl()]);
-  const title = row?.title?.trim() || "Root Cause Health";
+  const title = row?.title?.trim() || "Root Cause";
   const snippet = (row?.first_message ?? "").slice(0, 180);
 
   return new ImageResponse(
@@ -88,7 +88,7 @@ export default async function OpengraphImage({
               }}
             />
           )}
-          <span>Root Cause Health</span>
+          <span>Root Cause</span>
         </div>
 
         <div

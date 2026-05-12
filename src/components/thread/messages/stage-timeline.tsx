@@ -24,7 +24,7 @@ function formatElapsed(ms: number): string {
 
 function MetaPill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="ml-auto rounded-md bg-background/60 px-2 py-0.5 font-mono text-[11px] text-muted-foreground">
+    <span className="ml-auto rounded-md bg-background/60 px-2 py-0.5 font-mono text-xs text-muted-foreground">
       {children}
     </span>
   );
@@ -186,7 +186,7 @@ export function StageTimeline({
   return (
     <motion.div
       layout
-      className="w-full max-w-xl rounded-2xl bg-muted/70 px-3 py-2 text-sm"
+      className="w-full max-w-xl rounded-2xl bg-muted/70 px-3 py-2 text-base"
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
     >
@@ -203,7 +203,7 @@ export function StageTimeline({
         >
           <ChevronRight className="h-4 w-4" />
         </motion.span>
-        <span className="text-xs">{summaryBits.join(" · ")}</span>
+        <span className="text-sm">{summaryBits.join(" · ")}</span>
       </button>
 
       <AnimatePresence initial={false}>
@@ -244,14 +244,14 @@ export function StageTimeline({
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span
                       className={cn(
-                        "truncate text-sm font-medium",
+                        "truncate text-base font-medium",
                         dimmed && "font-normal",
                       )}
                     >
                       {stage.label}
                     </span>
                     {stage.description && (
-                      <span className="truncate text-xs text-muted-foreground">
+                      <span className="truncate text-sm text-muted-foreground">
                         {stage.description}
                       </span>
                     )}

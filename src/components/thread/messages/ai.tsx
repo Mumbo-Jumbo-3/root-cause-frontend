@@ -48,7 +48,7 @@ function CopyButton({ content, disabled }: { content: string; disabled: boolean 
     <TooltipIconButton
       onClick={handleCopy}
       variant="ghost"
-      tooltip="Copy content"
+      tooltip="Copy"
       disabled={disabled}
     >
       <AnimatePresence

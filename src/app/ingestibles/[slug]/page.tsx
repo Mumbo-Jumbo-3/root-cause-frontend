@@ -15,10 +15,10 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const ingestible = await fetchIngestible(slug);
-  if (!ingestible) return { title: "Not Found | Root Cause Health" };
+  if (!ingestible) return { title: "Not Found | Root Cause" };
 
   return {
-    title: `${ingestible.name} Ingestibles | Root Cause Health`,
+    title: `${ingestible.name} Ingestibles | Root Cause`,
     description: ingestible.description,
   };
 }

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
-  title: "Sources | Root Cause Health",
-  description: "Trusted sources used by Root Cause Health.",
+  title: "Sources | Root Cause",
+  description: "Trusted sources used by Root Cause.",
 };
 
 const sources = [
@@ -25,7 +25,7 @@ export default function SourcesPage() {
         <section className="flex max-w-3xl flex-col gap-3">
           <h1 className="text-3xl font-semibold tracking-tight">Sources</h1>
           <p className="text-muted-foreground text-lg">
-            Trusted sources informing Root Cause Health.
+            Trusted sources informing Root Cause.
           </p>
         </section>
 

@@ -19,12 +19,12 @@ export function FeaturedCard({ meta }: { meta: FeaturedQueryMeta }) {
         whileHover={{ y: -2 }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
       >
-        <Card className="group h-full cursor-pointer border-2 border-gray-500 bg-card/50 py-4 shadow-none transition-colors hover:border-primary hover:bg-card">
+        <Card className="group h-full min-h-40 cursor-pointer border-2 border-gray-500 bg-card/50 py-4 shadow-none transition-colors hover:border-primary hover:bg-card">
           <CardHeader className="gap-1.5 px-4">
-            <CardTitle className="text-base font-medium leading-snug text-gray-300 group-hover:text-foreground">
+            <CardTitle className="text-base font-medium leading-snug text-muted-foreground group-hover:text-foreground">
               {meta.query}
             </CardTitle>
-            <CardDescription className="text-sm">
+            <CardDescription className="text-sm text-gray-300">
               {meta.description}
             </CardDescription>
           </CardHeader>
