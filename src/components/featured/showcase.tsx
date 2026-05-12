@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import type { FeaturedQueryMeta } from "@/lib/content";
 import { FeaturedCard } from "./card";
 
@@ -10,14 +10,8 @@ const DRIFT_PX_PER_SEC = 30;
 const BUTTON_COOLDOWN_MS = 2000;
 
 export function FeaturedShowcase() {
-  const reduceMotion = useReducedMotion();
   const arrowVariants: Variants = {
-    idle: reduceMotion
-      ? { scale: 1 }
-      : {
-          scale: [1, 1.04, 1],
-          transition: { duration: 2.5, repeat: Infinity, ease: "easeInOut" },
-        },
+    idle: { scale: 1 },
     hover: {
       scale: 1.12,
       transition: { type: "spring", stiffness: 500, damping: 28 },
@@ -183,7 +177,7 @@ export function FeaturedShowcase() {
       >
         <div
           ref={scrollerRef}
-          className="flex w-full min-w-0 gap-3 overflow-x-auto [mask-image:linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)] py-1 [-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex w-full min-w-0 gap-3 overflow-x-auto [mask-image:linear-gradient(to_right,transparent_0%,black_18%,black_82%,transparent_100%)] py-1 [-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_18%,black_82%,transparent_100%)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {track.map((meta, i) => (
             <div
@@ -197,11 +191,11 @@ export function FeaturedShowcase() {
 
         <div
           aria-hidden
-          className="pointer-events-auto absolute inset-y-0 left-0 z-[5] w-[12%]"
+          className="pointer-events-auto absolute inset-y-0 left-0 z-[5] w-[18%]"
         />
         <div
           aria-hidden
-          className="pointer-events-auto absolute inset-y-0 right-0 z-[5] w-[12%]"
+          className="pointer-events-auto absolute inset-y-0 right-0 z-[5] w-[18%]"
         />
 
         <motion.button
@@ -211,10 +205,10 @@ export function FeaturedShowcase() {
           animate="idle"
           whileHover="hover"
           whileTap="tap"
-          className="text-muted-foreground border-muted-foreground/40 hover:border-primary hover:text-primary focus-visible:ring-primary absolute inset-y-0 left-1 z-10 flex w-14 items-center justify-center rounded-3xl border bg-transparent transition-[box-shadow,border-color,color] duration-200 hover:shadow-[0_0_18px_2px_rgb(94_227_140_/_0.35)] focus-visible:ring-2 focus-visible:outline-none"
+          className="text-muted-foreground border-muted-foreground hover:border-primary hover:text-primary focus-visible:ring-primary absolute inset-y-0 left-1 z-10 flex w-14 items-center justify-center rounded-3xl border-2 bg-background transition-[box-shadow,border-color,color] duration-200 hover:shadow-[0_0_18px_2px_rgb(94_227_140_/_0.35)] focus-visible:ring-2 focus-visible:outline-none"
           aria-label="Previous"
         >
-          <ChevronLeft className="size-5" />
+          <ChevronLeft className="size-7" strokeWidth={2.5} />
         </motion.button>
 
         <motion.button
@@ -224,10 +218,10 @@ export function FeaturedShowcase() {
           animate="idle"
           whileHover="hover"
           whileTap="tap"
-          className="text-muted-foreground border-muted-foreground/40 hover:border-primary hover:text-primary focus-visible:ring-primary absolute inset-y-0 right-1 z-10 flex w-14 items-center justify-center rounded-3xl border bg-transparent transition-[box-shadow,border-color,color] duration-200 hover:shadow-[0_0_18px_2px_rgb(94_227_140_/_0.35)] focus-visible:ring-2 focus-visible:outline-none"
+          className="text-muted-foreground border-muted-foreground hover:border-primary hover:text-primary focus-visible:ring-primary absolute inset-y-0 right-1 z-10 flex w-14 items-center justify-center rounded-3xl border-2 bg-background transition-[box-shadow,border-color,color] duration-200 hover:shadow-[0_0_18px_2px_rgb(94_227_140_/_0.35)] focus-visible:ring-2 focus-visible:outline-none"
           aria-label="Next"
         >
-          <ChevronRight className="size-5" />
+          <ChevronRight className="size-7" strokeWidth={2.5} />
         </motion.button>
       </div>
     </div>

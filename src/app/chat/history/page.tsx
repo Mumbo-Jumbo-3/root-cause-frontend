@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SiteHeader } from "@/components/site-header";
@@ -50,13 +50,16 @@ function HistoryContent() {
         <p className="text-muted-foreground text-base">
           Search your past conversations.
         </p>
-        <Input
-          type="search"
-          placeholder="Search conversations…"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="max-w-md placeholder:text-gray-400"
-        />
+        <div className="relative max-w-md">
+          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+          <Input
+            type="search"
+            placeholder="Search conversations…"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="h-11 border-2 border-gray-500 pl-9 placeholder:text-gray-300"
+          />
+        </div>
       </section>
 
       <ThreadHistoryContent

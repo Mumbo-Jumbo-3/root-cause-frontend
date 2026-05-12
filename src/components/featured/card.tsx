@@ -30,7 +30,7 @@ export function FeaturedCard({ meta }: { meta: FeaturedQueryMeta }) {
           </CardHeader>
           <CardFooter className="px-4 pt-0">
             <span className="flex items-center gap-1 text-sm text-primary">
-              Read response <ArrowRight className="size-3.5" />
+              View <ArrowRight className="size-3.5" />
             </span>
           </CardFooter>
         </Card>
