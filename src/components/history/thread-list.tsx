@@ -40,7 +40,7 @@ export function ThreadList({
             className="h-auto w-full items-start justify-start py-2 text-left font-normal"
             asChild
           >
-            <Link href={`/?threadId=${t.thread_id}`}>
+            <Link href={`/chat?threadId=${t.thread_id}`}>
               <p className="truncate text-ellipsis">{itemText}</p>
             </Link>
           </Button>

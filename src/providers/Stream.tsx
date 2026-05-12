@@ -37,6 +37,11 @@ type SubmitOptions = {
   optimisticValues?: (prev: StateType) => StateType;
 };
 
+type ActiveRun = {
+  runId: string;
+  threadId: string | null;
+};
+
 interface AgentStream {
   messages: Message[];
   values: StateType;
@@ -136,14 +141,49 @@ function useAgentStream(config: {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | undefined>(undefined);
   const abortRef = useRef<AbortController | null>(null);
+  const activeRunRef = useRef<ActiveRun | null>(null);
+  const currentThreadIdRef = useRef<string | null>(threadId);
+  const hydrationRequestIdRef = useRef(0);
   const stageTimeline = useStageTimeline();
+
+  const isActiveRunId = useCallback((runId: string) => {
+    return activeRunRef.current?.runId === runId;
+  }, []);
+
+  const isCurrentRun = useCallback((runId: string, runThreadId: string) => {
+    const activeRun = activeRunRef.current;
+    return (
+      activeRun?.runId === runId &&
+      activeRun.threadId === runThreadId &&
+      currentThreadIdRef.current === runThreadId
+    );
+  }, []);
+
+  useEffect(() => {
+    currentThreadIdRef.current = threadId;
+    const activeRun = activeRunRef.current;
+    if (activeRun?.threadId && threadId !== activeRun.threadId) {
+      activeRunRef.current = null;
+      abortRef.current?.abort();
+      abortRef.current = null;
+      setIsLoading(false);
+    }
+  }, [threadId]);
 
   // Load message history when thread id changes
   useEffect(() => {
+    const requestId = hydrationRequestIdRef.current + 1;
+    hydrationRequestIdRef.current = requestId;
+
     if (!threadId) {
       setMessages([]);
       return;
     }
+
+    if (activeRunRef.current?.threadId === threadId) {
+      return;
+    }
+
     let cancelled = false;
     (async () => {
       try {
@@ -154,7 +194,14 @@ function useAgentStream(config: {
         const data = (await res.json()) as {
           values?: { messages?: Message[] };
         };
-        if (!cancelled) setMessages(data.values?.messages ?? []);
+        if (
+          !cancelled &&
+          hydrationRequestIdRef.current === requestId &&
+          activeRunRef.current?.threadId !== threadId &&
+          currentThreadIdRef.current === threadId
+        ) {
+          setMessages(data.values?.messages ?? []);
+        }
       } catch {
         // leave messages as-is
       }
@@ -166,9 +213,14 @@ function useAgentStream(config: {
 
   const submit = useCallback(
     (input: SubmitInput, options?: SubmitOptions) => {
+      const runId = uuidv4();
+
       setError(undefined);
       setIsLoading(true);
       stageTimeline.reset();
+      hydrationRequestIdRef.current += 1;
+
+      activeRunRef.current = { runId, threadId };
 
       // Optimistic update (e.g., show user's message immediately)
       if (options?.optimisticValues) {
@@ -188,7 +240,13 @@ function useAgentStream(config: {
           let id = threadId;
           if (!id) {
             id = await createThread(apiUrl);
+            if (!isActiveRunId(runId)) return;
+            activeRunRef.current = { runId, threadId: id };
+            currentThreadIdRef.current = id;
             onThreadId(id);
+          } else {
+            activeRunRef.current = { runId, threadId: id };
+            currentThreadIdRef.current = id;
           }
 
           const normalized = normalizeInput(input);
@@ -215,6 +273,8 @@ function useAgentStream(config: {
             buffer = parsed.remainder;
 
             for (const evt of parsed.events) {
+              if (!isCurrentRun(runId, id)) return;
+
               if (evt.event === "token") {
                 const payload = JSON.parse(evt.data || "{}") as {
                   content?: string;
@@ -224,6 +284,7 @@ function useAgentStream(config: {
                 const chunk = payload.content ?? "";
                 if (!chunk) continue;
                 setMessages((prev) => {
+                  if (!isCurrentRun(runId, id)) return prev;
                   if (!seenToken) {
                     seenToken = true;
                     streamLog("first token", {
@@ -263,7 +324,9 @@ function useAgentStream(config: {
                   messages?: Message[];
                 };
                 streamLog("values", { messages: payload.messages?.length });
-                if (payload.messages) setMessages(payload.messages);
+                if (payload.messages && isCurrentRun(runId, id)) {
+                  setMessages(payload.messages);
+                }
               } else if (evt.event === "error") {
                 const payload = JSON.parse(evt.data || "{}") as {
                   error?: string;
@@ -274,19 +337,23 @@ function useAgentStream(config: {
             }
           }
         } catch (err) {
-          if ((err as Error).name !== "AbortError") {
+          if (isActiveRunId(runId) && (err as Error).name !== "AbortError") {
             setError(err as Error);
           }
         } finally {
-          if (abortRef.current === controller) abortRef.current = null;
-          setIsLoading(false);
+          if (isActiveRunId(runId)) {
+            activeRunRef.current = null;
+            if (abortRef.current === controller) abortRef.current = null;
+            setIsLoading(false);
+          }
         }
       })();
     },
-    [apiUrl, threadId, onThreadId, stageTimeline],
+    [apiUrl, threadId, onThreadId, stageTimeline, isActiveRunId, isCurrentRun],
   );
 
   const stop = useCallback(() => {
+    activeRunRef.current = null;
     abortRef.current?.abort();
     abortRef.current = null;
     setIsLoading(false);

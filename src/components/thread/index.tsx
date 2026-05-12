@@ -119,8 +119,6 @@ function isShareCanceled(error: unknown) {
 export function Thread() {
   const [threadId, setThreadId] = useQueryState("threadId");
   const [input, setInput] = useState("");
-  const [firstTokenReceived, setFirstTokenReceived] = useState(false);
-  const [prevMessageCount, setPrevMessageCount] = useState(0);
   const [sharing, setSharing] = useState(false);
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
   const [shareTarget, setShareTarget] = useState<{
@@ -166,21 +164,9 @@ export function Thread() {
     }
   }, [stream.error]);
 
-  if (messages.length !== prevMessageCount) {
-    setPrevMessageCount(messages.length);
-    if (
-      messages.length > 0 &&
-      messages[messages.length - 1].type === "ai" &&
-      !firstTokenReceived
-    ) {
-      setFirstTokenReceived(true);
-    }
-  }
-
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (input.trim().length === 0 || isLoading) return;
-    setFirstTokenReceived(false);
 
     const newHumanMessage: Message = {
       id: uuidv4(),
@@ -344,10 +330,18 @@ export function Thread() {
                   }
                   return -1;
                 })();
+                const assistantStartedAfterLastHuman =
+                  lastHumanIdx >= 0 &&
+                  visible
+                    .slice(lastHumanIdx + 1)
+                    .some((message) => message.type === "ai");
                 const showTimeline = hasStageEvents;
                 const showFallbackLoader =
-                  isLoading && !firstTokenReceived && !hasStageEvents;
-                const timelineCollapsed = firstTokenReceived || !isLoading;
+                  isLoading &&
+                  !assistantStartedAfterLastHuman &&
+                  !hasStageEvents;
+                const timelineCollapsed =
+                  assistantStartedAfterLastHuman || !isLoading;
 
                 const rendered: ReactNode[] = [];
                 visible.forEach((message, index) => {
