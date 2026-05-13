@@ -16,7 +16,6 @@ export interface FeaturedQuery extends FeaturedQueryMeta {
 export interface IngestibleMeta {
   slug: string;
   name: string;
-  description: string;
   prompt: string;
 }
 

@@ -19,7 +19,6 @@ export async function generateMetadata({
 
   return {
     title: `${ingestible.name} Ingestibles | Root Cause`,
-    description: ingestible.description,
   };
 }
 
@@ -42,14 +41,9 @@ export default async function IngestiblePage({ params }: PageProps) {
         </Link>
 
         <section className="border-border flex flex-col gap-4 border-b pb-8">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-3xl font-semibold tracking-tight">
-              {ingestible.name}
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              {ingestible.description}
-            </p>
-          </div>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            {ingestible.name}
+          </h1>
 
           <div className="border-border bg-muted/40 rounded-lg border px-4 py-3">
             <p className="text-foreground text-sm font-medium">Prompt</p>
