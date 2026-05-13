@@ -31,7 +31,7 @@ export default async function IngestiblePage({ params }: PageProps) {
     <div className="min-h-screen">
       <SiteHeader />
 
-      <main className="mx-auto flex max-w-4xl flex-col gap-8 px-4 py-8">
+      <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8">
         <Link
           href="/ingestibles"
           className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-sm transition-colors"
@@ -40,7 +40,7 @@ export default async function IngestiblePage({ params }: PageProps) {
           Ingestibles
         </Link>
 
-        <section className="border-border flex flex-col gap-4 border-b pb-8">
+        <section className="border-border flex flex-col gap-4 border-b pb-2">
           <h1 className="text-3xl font-semibold tracking-tight">
             {ingestible.name}
           </h1>
