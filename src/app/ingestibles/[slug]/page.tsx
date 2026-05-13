@@ -46,8 +46,8 @@ export default async function IngestiblePage({ params }: PageProps) {
           </h1>
 
           <div className="border-border bg-muted/40 rounded-lg border px-4 py-3">
-            <p className="text-foreground text-sm font-medium">Prompt</p>
-            <p className="text-muted-foreground mt-1 text-sm leading-6">
+            <p className="text-foreground text-base font-medium">Prompt</p>
+            <p className="text-muted-foreground mt-1 text-base leading-7">
               {ingestible.prompt}
             </p>
           </div>
