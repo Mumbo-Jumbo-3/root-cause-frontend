@@ -5,9 +5,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
 import type { FeaturedQueryMeta } from "@/lib/content";
 import { FeaturedCard } from "./card";
+import { FeaturedCardSkeleton } from "./card-skeleton";
 
 const DRIFT_PX_PER_SEC = 30;
 const BUTTON_COOLDOWN_MS = 2000;
+const SKELETON_COUNT = 6;
 
 export function FeaturedShowcase() {
   const arrowVariants: Variants = {
@@ -131,7 +133,7 @@ export function FeaturedShowcase() {
     };
   }, [items.length]);
 
-  if (items.length === 0) return null;
+  const isLoading = items.length === 0;
 
   function bumpButtonCooldown() {
     if (buttonCooldownTimerRef.current) {
@@ -165,11 +167,8 @@ export function FeaturedShowcase() {
     pauseCountRef.current = Math.max(0, pauseCountRef.current - 1);
   };
 
-  const track = [...items, ...items, ...items];
-
   return (
-    <div className="flex w-full max-w-3xl flex-col items-center gap-1">
-      <p className="text-xl text-white">Featured</p>
+    <div className="flex w-full max-w-3xl flex-col items-center">
       <div
         className="relative w-full"
         onPointerEnter={onPointerEnter}
@@ -179,14 +178,30 @@ export function FeaturedShowcase() {
           ref={scrollerRef}
           className="flex w-full min-w-0 gap-3 overflow-x-auto [mask-image:linear-gradient(to_right,transparent_0%,black_18%,black_82%,transparent_100%)] py-1 [-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_18%,black_82%,transparent_100%)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {track.map((meta, i) => (
-            <div
-              key={`${meta.slug}-${i}`}
-              className="shrink-0 basis-[48%] sm:basis-[42%] lg:basis-[30%]"
-            >
-              <FeaturedCard meta={meta} />
-            </div>
-          ))}
+          {isLoading
+            ? Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+                <motion.div
+                  key={`skel-${i}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="shrink-0 basis-[48%] sm:basis-[42%] lg:basis-[30%]"
+                >
+                  <FeaturedCardSkeleton />
+                </motion.div>
+              ))
+            : [...items, ...items, ...items].map((meta, i) => (
+                <motion.div
+                  key={`${meta.slug}-${i}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.25 }}
+                  className="shrink-0 basis-[48%] sm:basis-[42%] lg:basis-[30%]"
+                >
+                  <FeaturedCard meta={meta} />
+                </motion.div>
+              ))}
         </div>
 
         <div
@@ -200,12 +215,13 @@ export function FeaturedShowcase() {
 
         <motion.button
           onClick={() => stepBy(-1)}
+          disabled={isLoading}
           variants={arrowVariants}
           initial="idle"
           animate="idle"
-          whileHover="hover"
-          whileTap="tap"
-          className="text-muted-foreground border-muted-foreground hover:border-primary hover:text-primary focus-visible:ring-primary absolute inset-y-0 left-1 z-10 flex w-14 items-center justify-center rounded-3xl border-2 bg-background transition-[box-shadow,border-color,color] duration-200 hover:shadow-[0_0_18px_2px_rgb(94_227_140_/_0.35)] focus-visible:ring-2 focus-visible:outline-none"
+          whileHover={isLoading ? "idle" : "hover"}
+          whileTap={isLoading ? "idle" : "tap"}
+          className="text-muted-foreground border-muted-foreground hover:border-primary hover:text-primary focus-visible:ring-primary absolute inset-y-0 left-1 z-10 flex w-14 items-center justify-center rounded-3xl border-2 bg-background transition-[box-shadow,border-color,color,opacity] duration-200 hover:shadow-[0_0_18px_2px_rgb(94_227_140_/_0.35)] focus-visible:ring-2 focus-visible:outline-none disabled:cursor-default disabled:opacity-40 disabled:hover:border-muted-foreground disabled:hover:text-muted-foreground disabled:hover:shadow-none"
           aria-label="Previous"
         >
           <ChevronLeft className="size-7" strokeWidth={2.5} />
@@ -213,12 +229,13 @@ export function FeaturedShowcase() {
 
         <motion.button
           onClick={() => stepBy(1)}
+          disabled={isLoading}
           variants={arrowVariants}
           initial="idle"
           animate="idle"
-          whileHover="hover"
-          whileTap="tap"
-          className="text-muted-foreground border-muted-foreground hover:border-primary hover:text-primary focus-visible:ring-primary absolute inset-y-0 right-1 z-10 flex w-14 items-center justify-center rounded-3xl border-2 bg-background transition-[box-shadow,border-color,color] duration-200 hover:shadow-[0_0_18px_2px_rgb(94_227_140_/_0.35)] focus-visible:ring-2 focus-visible:outline-none"
+          whileHover={isLoading ? "idle" : "hover"}
+          whileTap={isLoading ? "idle" : "tap"}
+          className="text-muted-foreground border-muted-foreground hover:border-primary hover:text-primary focus-visible:ring-primary absolute inset-y-0 right-1 z-10 flex w-14 items-center justify-center rounded-3xl border-2 bg-background transition-[box-shadow,border-color,color,opacity] duration-200 hover:shadow-[0_0_18px_2px_rgb(94_227_140_/_0.35)] focus-visible:ring-2 focus-visible:outline-none disabled:cursor-default disabled:opacity-40 disabled:hover:border-muted-foreground disabled:hover:text-muted-foreground disabled:hover:shadow-none"
           aria-label="Next"
         >
           <ChevronRight className="size-7" strokeWidth={2.5} />
