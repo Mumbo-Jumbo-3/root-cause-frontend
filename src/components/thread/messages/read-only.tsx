@@ -33,7 +33,7 @@ export function ReadOnlyMessages({ messages }: { messages: Message[] }) {
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-8">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 pt-14 pb-8 sm:pt-8">
       {visible.map((message, idx) =>
         message.type === "human" ? (
           <ReadOnlyHumanMessage

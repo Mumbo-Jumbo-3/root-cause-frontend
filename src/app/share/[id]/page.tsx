@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { ReadOnlyMessages } from "@/components/thread/messages/read-only";
 import { RootCauseLogo } from "@/components/icons/root-cause";
 import type { Message } from "@/lib/agent-types";
@@ -91,22 +90,13 @@ export default async function SharePage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen">
-      <header className="flex w-full items-center justify-between gap-3 px-4 py-4">
-        <Link
-          href="/chat"
-          className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <RootCauseLogo width={24} height={24} />
-          <span className="font-semibold">Root Cause</span>
-        </Link>
-        <Link
-          href="/chat"
-          className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          Back
-        </Link>
-      </header>
+      <Link
+        href="/chat"
+        className="fixed top-4 left-4 z-50 flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <RootCauseLogo width={24} height={24} />
+        <span className="font-semibold">Root Cause</span>
+      </Link>
 
       <ReadOnlyMessages messages={messages} />
     </div>

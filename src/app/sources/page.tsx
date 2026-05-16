@@ -19,7 +19,7 @@ const sources = [
 export default function SourcesPage() {
   return (
     <AppShell mainClassName="overflow-y-auto">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pt-14 pb-8 sm:pt-8">
         <section className="flex max-w-3xl flex-col gap-3">
           <h1 className="text-3xl font-semibold tracking-tight">Sources</h1>
           <p className="text-muted-foreground text-lg">

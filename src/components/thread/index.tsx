@@ -283,7 +283,7 @@ export function Thread() {
           )}
           contentClassName={cn(
             "max-w-3xl mx-auto flex flex-col gap-4 w-full",
-            chatStarted && "pt-8 pb-16",
+            chatStarted && "pt-14 sm:pt-8 pb-16",
           )}
           content={
             <>

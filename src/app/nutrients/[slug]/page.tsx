@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { MarkdownText } from "@/components/thread/markdown-text";
 import { fetchNutrient } from "@/lib/content";
@@ -29,15 +27,7 @@ export default async function NutrientPage({ params }: PageProps) {
 
   return (
     <AppShell mainClassName="overflow-y-auto">
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-8">
-        <Link
-          href="/nutrients"
-          className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-sm transition-colors"
-        >
-          <ArrowLeft className="size-4" />
-          Nutrients
-        </Link>
-
+      <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 pt-14 pb-8 sm:pt-8">
         <section className="flex flex-col gap-4">
           <h1 className="text-3xl font-semibold tracking-tight">
             {nutrient.name}

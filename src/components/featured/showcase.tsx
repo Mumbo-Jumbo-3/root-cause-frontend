@@ -182,7 +182,7 @@ export function FeaturedShowcase() {
           {track.map((meta, i) => (
             <div
               key={`${meta.slug}-${i}`}
-              className="shrink-0 basis-[64%] sm:basis-[42%] lg:basis-[30%]"
+              className="shrink-0 basis-[48%] sm:basis-[42%] lg:basis-[30%]"
             >
               <FeaturedCard meta={meta} />
             </div>

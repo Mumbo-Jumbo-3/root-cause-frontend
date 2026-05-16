@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { AppShell } from "@/components/app-shell";
 import { useThreads } from "@/providers/Thread";
@@ -13,15 +11,6 @@ import { Toaster } from "@/components/ui/sonner";
 function HistoryContent() {
   const { threads, threadsStatus, threadsError, refreshThreads } = useThreads();
   const [filter, setFilter] = useState("");
-  const router = useRouter();
-
-  const handleBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-    } else {
-      router.push("/chat");
-    }
-  };
 
   useEffect(() => {
     refreshThreads({ force: true, silent: false }).catch(console.error);
@@ -32,19 +21,7 @@ function HistoryContent() {
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={handleBack}
-        className="-ml-2 self-start"
-        aria-label="Go back"
-      >
-        <ArrowLeft className="size-4" />
-        <span>Back</span>
-      </Button>
-
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pt-14 pb-8 sm:pt-8">
       <section className="flex flex-col gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">History</h1>
         <p className="text-muted-foreground text-base">

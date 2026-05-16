@@ -33,7 +33,7 @@ export function AppShell({
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent
           side="left"
-          className="bg-background w-72 max-w-[80%] border-r-2 border-gray-500 p-0"
+          className="bg-background w-64 max-w-[80%] p-0"
         >
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <SheetDescription className="sr-only">
