@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
 
 export const metadata: Metadata = {
   title: "Sources | Root Cause",
@@ -18,10 +18,8 @@ const sources = [
 
 export default function SourcesPage() {
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
-
-      <main className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8">
+    <AppShell mainClassName="overflow-y-auto">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8">
         <section className="flex max-w-3xl flex-col gap-3">
           <h1 className="text-3xl font-semibold tracking-tight">Sources</h1>
           <p className="text-muted-foreground text-lg">
@@ -43,7 +41,7 @@ export default function SourcesPage() {
             </li>
           ))}
         </ul>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }

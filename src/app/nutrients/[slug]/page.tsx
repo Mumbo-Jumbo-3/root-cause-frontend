@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
 import { MarkdownText } from "@/components/thread/markdown-text";
 import { fetchNutrient } from "@/lib/content";
 
@@ -28,10 +28,8 @@ export default async function NutrientPage({ params }: PageProps) {
   if (!nutrient) notFound();
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
-
-      <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8">
+    <AppShell mainClassName="overflow-y-auto">
+      <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-8">
         <Link
           href="/nutrients"
           className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-sm transition-colors"
@@ -56,7 +54,7 @@ export default async function NutrientPage({ params }: PageProps) {
         <article className="prose-sm">
           <MarkdownText>{nutrient.response_markdown}</MarkdownText>
         </article>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }

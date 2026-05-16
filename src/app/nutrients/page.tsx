@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
 import { NutrientGrid } from "@/components/nutrients/nutrient-grid";
 import { fetchNutrientList } from "@/lib/content";
 
@@ -11,10 +11,8 @@ export const metadata: Metadata = {
 export default async function NutrientsPage() {
   const nutrients = await fetchNutrientList();
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
-
-      <main className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8">
+    <AppShell mainClassName="overflow-y-auto">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8">
         <section className="flex max-w-3xl flex-col gap-3">
           <h1 className="text-3xl font-semibold tracking-tight">Nutrients</h1>
           <p className="text-muted-foreground text-lg">
@@ -23,7 +21,7 @@ export default async function NutrientsPage() {
         </section>
 
         <NutrientGrid nutrients={nutrients} />
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }

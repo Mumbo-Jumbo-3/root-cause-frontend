@@ -8,6 +8,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/ui/themes";
 import { clerkLocalization } from "@/lib/clerk-localization";
 import { NutrientLinksProvider } from "@/components/nutrient-links-provider";
+import { ThreadProvider } from "@/providers/Thread";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -54,7 +55,9 @@ export default function RootLayout({
         >
           <ThemeProvider attribute="class" defaultTheme="dark">
             <NuqsAdapter>
-              <NutrientLinksProvider>{children}</NutrientLinksProvider>
+              <ThreadProvider>
+                <NutrientLinksProvider>{children}</NutrientLinksProvider>
+              </ThreadProvider>
             </NuqsAdapter>
           </ThemeProvider>
         </ClerkProvider>

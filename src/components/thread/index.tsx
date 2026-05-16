@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from "uuid";
-import Link from "next/link";
 import { ReactNode, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -17,15 +16,13 @@ import { TooltipIconButton } from "./tooltip-icon-button";
 import {
   ArrowDown,
   Copy,
-  History,
   LoaderCircle,
   Share2,
-  SquarePen,
 } from "lucide-react";
 import { getContentString } from "./utils";
 import { useQueryState } from "nuqs";
 import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
 import { FeaturedShowcase } from "../featured/showcase";
 import { toast } from "sonner";
 import {
@@ -116,7 +113,7 @@ function isShareCanceled(error: unknown) {
 }
 
 export function Thread() {
-  const [threadId, setThreadId] = useQueryState("threadId");
+  const [threadId] = useQueryState("threadId");
   const [input, setInput] = useState("");
   const [sharing, setSharing] = useState(false);
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
@@ -257,55 +254,25 @@ export function Thread() {
   const chatStarted = !!threadId || !!messages.length;
 
   return (
-    <div className="flex h-dvh w-full flex-col overflow-hidden">
-      <SiteHeader />
-
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b-2 border-gray-500 px-4 py-1.5">
-        <Button
-          variant="ghost"
-          size="sm"
-          asChild
-          className="text-muted-foreground hover:text-foreground"
-        >
-          <Link
-            href="/chat/history"
-            aria-label="History"
+    <AppShell>
+      {threadId && (
+        <div className="absolute top-2 right-3 z-30">
+          <TooltipIconButton
+            tooltip="Share"
+            tooltipClassName="text-base font-bold"
+            variant="ghost"
+            className="size-9 p-1.5"
+            disabled={sharing}
+            onClick={handleShare}
           >
-            <History className="size-4" />
-            <span>History</span>
-          </Link>
-        </Button>
-
-        <div className="flex items-center gap-1">
-          {chatStarted && (
-            <TooltipIconButton
-              tooltip="New"
-              tooltipClassName="text-base font-bold"
-              variant="ghost"
-              className="size-9 p-1.5"
-              onClick={() => setThreadId(null)}
-            >
-              <SquarePen className="size-5" />
-            </TooltipIconButton>
-          )}
-          {threadId && (
-            <TooltipIconButton
-              tooltip="Share"
-              tooltipClassName="text-base font-bold"
-              variant="ghost"
-              className="size-9 p-1.5"
-              disabled={sharing}
-              onClick={handleShare}
-            >
-              {sharing ? (
-                <LoaderCircle className="size-5 animate-spin" />
-              ) : (
-                <Share2 className="size-5" />
-              )}
-            </TooltipIconButton>
-          )}
+            {sharing ? (
+              <LoaderCircle className="size-5 animate-spin" />
+            ) : (
+              <Share2 className="size-5" />
+            )}
+          </TooltipIconButton>
         </div>
-      </div>
+      )}
 
       <StickToBottom className="relative min-h-0 flex-1 overflow-hidden">
         <StickyToBottomContent
@@ -527,6 +494,6 @@ export function Thread() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
-    </div>
+    </AppShell>
   );
 }

@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SiteHeader } from "@/components/site-header";
-import { ThreadProvider, useThreads } from "@/providers/Thread";
+import { AppShell } from "@/components/app-shell";
+import { useThreads } from "@/providers/Thread";
 import { ThreadHistoryContent } from "@/components/history/thread-list";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -77,12 +77,9 @@ export default function HistoryPage(): React.ReactNode {
   return (
     <React.Suspense fallback={<div>Loading…</div>}>
       <Toaster />
-      <ThreadProvider>
-        <div className="min-h-screen">
-          <SiteHeader />
-          <HistoryContent />
-        </div>
-      </ThreadProvider>
+      <AppShell mainClassName="overflow-y-auto">
+        <HistoryContent />
+      </AppShell>
     </React.Suspense>
   );
 }

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { fetchFeaturedQuery } from "@/lib/content";
 import { FeaturedTabs } from "@/components/featured/tabs";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 
 interface PageProps {
@@ -28,29 +28,26 @@ export default async function FeaturedPage({ params }: PageProps) {
   if (!query) notFound();
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
-
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b-2 border-gray-500 px-4 py-1.5">
+    <AppShell mainClassName="overflow-y-auto">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b-2 border-gray-500 px-4 py-1.5 pl-14 sm:pl-4">
         <Button
           variant="ghost"
-          size="sm"
           asChild
-          className="text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground text-base"
         >
           <Link href="/chat" aria-label="Back">
-            <ArrowLeft className="size-4" />
+            <ArrowLeft className="size-5" />
             <span>Back</span>
           </Link>
         </Button>
       </div>
 
-      <main className="mx-auto flex max-w-3xl flex-col gap-3 px-4 pb-3">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-4 pb-3">
         <FeaturedTabs
           responseMarkdown={query.response_markdown}
           shareLinks={query.shareLinks}
         />
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
