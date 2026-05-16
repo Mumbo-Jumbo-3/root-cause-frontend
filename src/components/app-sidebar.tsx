@@ -173,16 +173,16 @@ export function AppSidebar({
                 );
               })
             )}
+            {threads.length > RECENTS_LIMIT && (
+              <Link
+                href="/chat/history"
+                onClick={onNavigate}
+                className="text-muted-foreground hover:text-sidebar-foreground px-3 pt-1 pb-2 text-sm"
+              >
+                See all →
+              </Link>
+            )}
           </div>
-          {threads.length > RECENTS_LIMIT && (
-            <Link
-              href="/chat/history"
-              onClick={onNavigate}
-              className="text-sidebar-foreground/60 hover:text-sidebar-foreground px-3 pt-1 pb-2 text-xs"
-            >
-              See all →
-            </Link>
-          )}
         </div>
       )}
 
