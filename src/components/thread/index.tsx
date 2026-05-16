@@ -312,7 +312,7 @@ export function Thread() {
           className={cn(
             "[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 absolute inset-0 overflow-y-scroll px-4 [scrollbar-gutter:stable_both-edges] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent",
             !chatStarted && "flex flex-col items-stretch justify-center",
-            chatStarted && "grid grid-rows-[1fr_auto]",
+            chatStarted && "grid grid-cols-[minmax(0,1fr)] grid-rows-[1fr_auto]",
           )}
           contentClassName={cn(
             "max-w-3xl mx-auto flex flex-col gap-4 w-full",
