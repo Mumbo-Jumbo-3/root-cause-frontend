@@ -14,6 +14,9 @@ const HOP_BY_HOP = new Set([
   "content-length",
 ]);
 
+const REQUEST_HEADER_BLOCKLIST = new Set([...HOP_BY_HOP, "accept-encoding"]);
+const RESPONSE_HEADER_BLOCKLIST = new Set([...HOP_BY_HOP, "content-encoding"]);
+
 export interface ProxyContext {
   userId: string;
   apiUrl: string;
@@ -44,7 +47,9 @@ export async function withAuthedProxy(
 export function forwardHeaders(req: NextRequest, ctx: ProxyContext): Headers {
   const headers = new Headers();
   req.headers.forEach((value, key) => {
-    if (!HOP_BY_HOP.has(key.toLowerCase())) headers.set(key, value);
+    if (!REQUEST_HEADER_BLOCKLIST.has(key.toLowerCase())) {
+      headers.set(key, value);
+    }
   });
   if (ctx.authToken) {
     headers.set("authorization", `Bearer ${ctx.authToken}`);
@@ -70,7 +75,9 @@ export async function proxyUpstream(
 
   const responseHeaders = new Headers();
   upstream.headers.forEach((value, key) => {
-    if (!HOP_BY_HOP.has(key.toLowerCase())) responseHeaders.set(key, value);
+    if (!RESPONSE_HEADER_BLOCKLIST.has(key.toLowerCase())) {
+      responseHeaders.set(key, value);
+    }
   });
 
   return new Response(upstream.body, {
