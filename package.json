@@ -1,10 +1,8 @@
 {
-  "name": "agent-chat-ui",
-  "readme": "https://github.com/langchain-ai/agent-chat-ui/blob/main/README.md",
-  "homepage": "https://agentchat.vercel.app",
+  "name": "root-cause-frontend",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/langchain-ai/agent-chat-ui.git"
+    "url": "git+https://github.com/Mumbo-Jumbo-3/root-cause-frontend.git"
   },
   "private": true,
   "version": "0.0.0",
