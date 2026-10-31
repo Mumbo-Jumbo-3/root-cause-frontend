@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 
 import { useThreads } from "./Thread";
-import type { Message } from "@/lib/agent-types";
+import type { CitationRef, Message } from "@/lib/agent-types";
 import {
   useStageTimeline,
   type PhaseEvent,
@@ -116,20 +116,6 @@ function parseSSEBuffer(buffer: string): {
   return { events, remainder };
 }
 
-function messageContentToText(content: Message["content"]): string {
-  if (typeof content === "string") return content;
-  if (!Array.isArray(content)) return "";
-  return content
-    .filter(
-      (c): c is { type: "text"; text: string } =>
-        typeof c === "object" &&
-        c !== null &&
-        (c as { type?: string }).type === "text",
-    )
-    .map((c) => c.text)
-    .join("");
-}
-
 function useAgentStream(config: {
   apiUrl: string;
   threadId: string | null;
@@ -145,6 +131,9 @@ function useAgentStream(config: {
   const currentThreadIdRef = useRef<string | null>(threadId);
   const hydrationRequestIdRef = useRef(0);
   const stageTimeline = useStageTimeline();
+  const resetTimeline = stageTimeline.reset;
+  // The thread whose run produced the live timeline; other threads show saved traces.
+  const timelineThreadIdRef = useRef<string | null>(null);
 
   const isActiveRunId = useCallback((runId: string) => {
     return activeRunRef.current?.runId === runId;
@@ -168,7 +157,11 @@ function useAgentStream(config: {
       abortRef.current = null;
       setIsLoading(false);
     }
-  }, [threadId]);
+    if (threadId !== timelineThreadIdRef.current) {
+      timelineThreadIdRef.current = null;
+      resetTimeline();
+    }
+  }, [threadId, resetTimeline]);
 
   // Load message history when thread id changes
   useEffect(() => {
@@ -234,6 +227,18 @@ function useAgentStream(config: {
       abortRef.current = controller;
       const assistantId = uuidv4();
       let seenToken = false;
+      // Claude streams cited answers as indexed text blocks; a block's citations
+      // anchor where its text ends, i.e. when the next block starts.
+      let streamText = "";
+      const streamCitations: CitationRef[] = [];
+      let pendingCitations: CitationRef[] = [];
+      let currentBlock: number | undefined;
+      const flushCitations = () => {
+        for (const c of pendingCitations) {
+          streamCitations.push({ ...c, offset: streamText.length });
+        }
+        pendingCitations = [];
+      };
 
       (async () => {
         try {
@@ -243,10 +248,13 @@ function useAgentStream(config: {
             if (!isActiveRunId(runId)) return;
             activeRunRef.current = { runId, threadId: id };
             currentThreadIdRef.current = id;
+            // Before onThreadId, so the new thread keeps this run's live timeline.
+            timelineThreadIdRef.current = id;
             onThreadId(id);
           } else {
             activeRunRef.current = { runId, threadId: id };
             currentThreadIdRef.current = id;
+            timelineThreadIdRef.current = id;
           }
 
           const normalized = normalizeInput(input);
@@ -279,35 +287,44 @@ function useAgentStream(config: {
                 const payload = JSON.parse(evt.data || "{}") as {
                   content?: string;
                   node?: string;
+                  block?: number;
+                  citations?: { document_index: number; cited_text: string }[];
                 };
                 if (payload.node !== "claude_synthesize") continue;
+                if (payload.block !== currentBlock) {
+                  flushCitations();
+                  currentBlock = payload.block;
+                }
+                for (const c of payload.citations ?? []) {
+                  pendingCitations.push({
+                    offset: 0,
+                    document_index: c.document_index,
+                    quote: c.cited_text,
+                  });
+                }
                 const chunk = payload.content ?? "";
                 if (!chunk) continue;
+                streamText += chunk;
+                const streamed: Message = {
+                  id: assistantId,
+                  type: "ai",
+                  content: streamText,
+                  citations: [...streamCitations],
+                };
+                if (!seenToken) {
+                  streamLog("first token", {
+                    assistantId,
+                    chars: chunk.length,
+                  });
+                }
+                seenToken = true;
                 setMessages((prev) => {
                   if (!isCurrentRun(runId, id)) return prev;
-                  if (!seenToken) {
-                    seenToken = true;
-                    streamLog("first token", {
-                      assistantId,
-                      chars: chunk.length,
-                    });
-                    return [
-                      ...prev,
-                      { id: assistantId, type: "ai", content: chunk },
-                    ];
-                  }
                   const last = prev[prev.length - 1];
                   if (last?.type === "ai" && last.id === assistantId) {
-                    const prevText = messageContentToText(last.content);
-                    return [
-                      ...prev.slice(0, -1),
-                      { ...last, content: prevText + chunk },
-                    ];
+                    return [...prev.slice(0, -1), streamed];
                   }
-                  return [
-                    ...prev,
-                    { id: assistantId, type: "ai", content: chunk },
-                  ];
+                  return [...prev, streamed];
                 });
               } else if (evt.event === "phase") {
                 try {

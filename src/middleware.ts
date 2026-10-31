@@ -7,6 +7,7 @@ const isPublicRoute = createRouteMatcher([
   "/featured/(.*)",
   "/nutrients(.*)",
   "/api/featured(.*)",
+  "/api/tweet(.*)",
   "/api/webhooks(.*)",
 ]);
 

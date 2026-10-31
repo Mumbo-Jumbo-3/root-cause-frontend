@@ -111,3 +111,22 @@
     transform: translateX(100%);
   }
 }
+
+/* Tweets embedded in the research trace, themed to the app's dark palette. */
+.research-tweet .react-tweet-theme {
+  --tweet-container-margin: 0;
+  --tweet-font-family: inherit;
+  --tweet-font-color: var(--foreground);
+  --tweet-font-color-secondary: color-mix(in srgb, var(--foreground) 60%, transparent);
+  --tweet-bg-color: var(--card);
+  --tweet-bg-color-hover: var(--accent);
+  --tweet-quoted-bg-color-hover: var(--accent);
+  --tweet-border: 1px solid var(--border);
+  --tweet-body-font-size: 0.95rem;
+  --tweet-body-line-height: 1.4rem;
+  --tweet-color-blue-primary: var(--primary);
+  --tweet-color-blue-secondary: var(--primary);
+  --tweet-twitter-icon-color: var(--foreground);
+  --tweet-skeleton-gradient: linear-gradient(270deg, var(--muted), var(--accent), var(--accent), var(--muted));
+  max-width: 100%;
+}
