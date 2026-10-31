@@ -33,9 +33,33 @@ export interface HumanMessage extends BaseMessageLike {
   type: "human";
 }
 
+/** Where a cited passage ends in the answer text, and what it cites. */
+export interface CitationRef {
+  offset: number;
+  /** Resolved by the backend on saved messages. */
+  evidence_id?: string;
+  /** Live stream only: index into the synthesize step's evidence list. */
+  document_index?: number;
+  quote?: string;
+}
+
+/** Phase events that produced an answer, saved alongside it. */
+export interface ResearchTrace {
+  version: number;
+  elapsed_ms: number;
+  events: {
+    phase: string;
+    status: "started" | "completed";
+    meta?: Record<string, string | number | boolean>;
+    detail?: Record<string, unknown>;
+  }[];
+}
+
 export interface AIMessage extends BaseMessageLike {
   type: "ai";
   tool_calls?: ToolCall[];
+  citations?: CitationRef[];
+  research_trace?: ResearchTrace;
 }
 
 export interface ToolMessage extends BaseMessageLike {

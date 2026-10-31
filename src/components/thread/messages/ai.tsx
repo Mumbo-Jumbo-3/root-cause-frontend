@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Copy, CopyCheck } from "lucide-react";
 
@@ -9,6 +9,9 @@ import { MarkdownText } from "../markdown-text";
 import { TooltipIconButton } from "../tooltip-icon-button";
 import { ToolCalls, ToolResult } from "./tool-calls";
 import { useLoadingStage } from "./loading-stages";
+import { buildCitedMarkdown, resolveCitations, SourcesList } from "./citations";
+import { TurnResearchContext, type TurnResearch } from "../research-context";
+import type { StageTimelineState } from "@/hooks/use-stage-timeline";
 
 function parseAnthropicStreamedToolCalls(
   content: MessageContentBlock[],
@@ -81,15 +84,35 @@ function CopyButton({ content, disabled }: { content: string; disabled: boolean 
   );
 }
 
+/** Answer markdown with citation markers, plus the context their chips read. */
+export function useCitedAnswer(
+  message: Message | undefined,
+  turn: number,
+  timeline: StageTimelineState | null,
+): { markdown: string; research: TurnResearch } {
+  const contentString = getContentString(message?.content ?? []);
+  const citationRefs = message?.type === "ai" ? message.citations : undefined;
+  return useMemo(() => {
+    const citations = resolveCitations(citationRefs, timeline);
+    const { markdown, order } = buildCitedMarkdown(contentString, citations);
+    return { markdown, research: { turn, timeline, citations, order } };
+  }, [contentString, citationRefs, timeline, turn]);
+}
+
 export function AssistantMessage({
   message,
   isLoading,
+  turn,
+  timeline,
 }: {
   message: Message | undefined;
   isLoading: boolean;
+  turn: number;
+  timeline: StageTimelineState | null;
 }) {
   const content = message?.content ?? [];
   const contentString = getContentString(content);
+  const { markdown, research } = useCitedAnswer(message, turn, timeline);
 
   const anthropicStreamedToolCalls = Array.isArray(content)
     ? parseAnthropicStreamedToolCalls(content as MessageContentBlock[])
@@ -117,9 +140,12 @@ export function AssistantMessage({
         ) : (
           <>
             {contentString.length > 0 && (
-              <div className="py-1">
-                <MarkdownText>{contentString}</MarkdownText>
-              </div>
+              <TurnResearchContext.Provider value={research}>
+                <div className="py-1">
+                  <MarkdownText>{markdown}</MarkdownText>
+                  {!isLoading && <SourcesList />}
+                </div>
+              </TurnResearchContext.Provider>
             )}
 
             {(hasToolCalls && toolCallsHaveContents && (

@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
-import { FC, memo, useMemo, useState } from "react";
+import { FC, memo, ReactNode, useMemo, useState } from "react";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -16,6 +16,10 @@ import { TooltipIconButton } from "@/components/thread/tooltip-icon-button";
 import { cn } from "@/lib/utils";
 import { useNutrientLinks } from "@/lib/nutrient-links-context";
 import { remarkNutrientLinks } from "@/lib/remark-nutrient-links";
+import {
+  CITE_HREF_PREFIX,
+  CitationChip,
+} from "@/components/thread/messages/citations";
 
 import "katex/dist/katex.min.css";
 
@@ -130,6 +134,13 @@ const defaultComponents: any = {
     className?: string;
     href?: string;
   } & Record<string, unknown>) => {
+    if (typeof href === "string" && href.startsWith(CITE_HREF_PREFIX)) {
+      return (
+        <CitationChip index={Number(href.slice(CITE_HREF_PREFIX.length))}>
+          {props.children as ReactNode}
+        </CitationChip>
+      );
+    }
     const isNutrient =
       typeof className === "string" && className.includes("nutrient-link");
     const isInternal = typeof href === "string" && href.startsWith("/");

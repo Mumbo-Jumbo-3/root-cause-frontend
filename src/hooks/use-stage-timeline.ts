@@ -2,6 +2,8 @@
 
 import { useCallback, useReducer } from "react";
 
+import type { ResearchTrace } from "@/lib/agent-types";
+
 export type StageStatus =
   | "pending"
   | "running"
@@ -17,9 +19,50 @@ export interface StageSpec {
   conditional?: boolean;
 }
 
+/** One claim distilled from X posts by a Grok search step. */
+export interface Finding {
+  id: string;
+  claim: string;
+  relevance: string;
+  source_urls: string[];
+  handles: string[];
+  /** Posts linked by text similarity rather than cited by Grok. */
+  matched?: boolean;
+}
+
+/** A curated-archive chunk; shared by every step that retrieved it. */
+export interface DocInfo {
+  id: string;
+  title: string;
+  author: string;
+  section: string[];
+  text: string;
+}
+
+export interface DocHit {
+  id: string;
+  /** Rerank score after merging, vector similarity before. 0–1. */
+  score?: number | null;
+  origin?: "base" | "expanded" | "both";
+  queries?: string[];
+}
+
+export interface StageDetail {
+  findings?: Finding[];
+  /** X posts the search read (verified by xAI), for steps whose findings lack links. */
+  posts?: string[];
+  queries?: string[];
+  hits?: DocHit[];
+  sufficient?: boolean;
+  reason?: string;
+  /** Synthesize step: evidence ids in the order Claude received them. */
+  evidence?: string[];
+}
+
 export interface Stage extends StageSpec {
   status: StageStatus;
   meta: Record<string, string | number | boolean>;
+  detail?: StageDetail;
   startedAt?: number;
   completedAt?: number;
 }
@@ -30,6 +73,7 @@ export interface PhaseEvent {
   phase: string;
   status: "started" | "completed";
   meta?: Record<string, StageMetaValue>;
+  detail?: StageDetail & { docs?: Record<string, DocInfo> };
 }
 
 export interface StageTimelineSummary {
@@ -47,6 +91,13 @@ export const TIMELINE_SPEC: StageSpec[] = [
     parentId: "search_group",
     label: "Trusted X accounts",
     description: "Curated handles aligned with the research archive",
+  },
+  {
+    id: "womens_health_search",
+    parentId: "search_group",
+    label: "Trusted women's-health accounts",
+    description: "Curated handles focused on female physiology",
+    conditional: true,
   },
   {
     id: "rag_base",
@@ -86,6 +137,7 @@ const STATUS_COMPLETED_SET = new Set<string>(["success", "empty"]);
 
 export interface StageTimelineState {
   stages: Record<string, Stage>;
+  docs: Record<string, DocInfo>;
   startedAt: number | null;
   completedAt: number | null;
   order: string[];
@@ -111,6 +163,7 @@ function buildInitial(): StageTimelineState {
   }
   return {
     stages,
+    docs: {},
     startedAt: null,
     completedAt: null,
     order,
@@ -191,10 +244,14 @@ export function stageTimelineReducer(
         startedAt = startedAt ?? now;
       }
 
+      const { docs, ...detail } = event.detail ?? {};
       nextStages[event.phase] = {
         ...existing,
         status: nextStatus,
         meta: { ...existing.meta, ...(event.meta ?? {}) },
+        detail: event.detail
+          ? { ...existing.detail, ...detail }
+          : existing.detail,
         startedAt,
         completedAt,
       };
@@ -202,6 +259,7 @@ export function stageTimelineReducer(
       let next: StageTimelineState = {
         ...state,
         stages: nextStages,
+        docs: docs ? { ...state.docs, ...docs } : state.docs,
         hasAny: true,
         startedAt: state.startedAt ?? now,
         unrestrictedUsed,
@@ -244,12 +302,19 @@ export function summarizeTimeline(
   state: StageTimelineState,
 ): StageTimelineSummary {
   const end = state.completedAt ?? Date.now();
-  const elapsedMs = state.startedAt ? Math.max(0, end - state.startedAt) : 0;
+  const elapsedMs =
+    state.startedAt !== null ? Math.max(0, end - state.startedAt) : 0;
 
-  const searchIds = ["trusted_search", "rag_base", "rag_enrich", "unrestricted_search"];
+  const searchIds = [
+    "trusted_search",
+    "womens_health_search",
+    "rag_base",
+    "rag_enrich",
+    "unrestricted_search",
+  ];
   const sources = searchIds.filter((id) => {
     const s = state.stages[id];
-    return s && (s.status === "completed") && numberMeta(s.meta, "docs") + numberMeta(s.meta, "posts") > 0;
+    return s && (s.status === "completed") && numberMeta(s.meta, "docs") + numberMeta(s.meta, "findings") > 0;
   }).length;
 
   const docs = numberMeta(state.stages["rag_merge"]?.meta ?? {}, "docs");
@@ -264,6 +329,61 @@ export function summarizeTimeline(
     sufficient,
     unrestrictedUsed: state.unrestrictedUsed,
   };
+}
+
+/** Rebuild a finished run's timeline from the trace saved on its answer. */
+export function timelineFromTrace(trace: ResearchTrace): StageTimelineState {
+  let state = buildInitial();
+  for (const event of trace.events) {
+    state = stageTimelineReducer(state, {
+      type: "phase",
+      event: event as PhaseEvent,
+      now: 0,
+    });
+  }
+  return { ...state, startedAt: 0, completedAt: trace.elapsed_ms };
+}
+
+const traceTimelines = new WeakMap<ResearchTrace, StageTimelineState>();
+
+/** `timelineFromTrace`, memoized per saved trace so re-renders reuse it. */
+export function cachedTimelineFromTrace(
+  trace: ResearchTrace,
+): StageTimelineState {
+  let state = traceTimelines.get(trace);
+  if (!state) {
+    state = timelineFromTrace(trace);
+    traceTimelines.set(trace, state);
+  }
+  return state;
+}
+
+export type Evidence =
+  | { kind: "finding"; stageId: string; finding: Finding }
+  | { kind: "doc"; stageId: string; doc: DocInfo; hit?: DocHit };
+
+const FINDING_STAGES = [
+  "trusted_search",
+  "womens_health_search",
+  "unrestricted_search",
+];
+
+/** Resolve a citation's evidence id to the trace item and the step that shows it. */
+export function findEvidence(
+  state: StageTimelineState,
+  id: string,
+): Evidence | null {
+  for (const stageId of FINDING_STAGES) {
+    const finding = state.stages[stageId]?.detail?.findings?.find(
+      (f) => f.id === id,
+    );
+    if (finding) return { kind: "finding", stageId, finding };
+  }
+  const doc = state.docs[id];
+  if (!doc) return null;
+  // Cited docs are always in the merged set fed to the answer.
+  const hit = state.stages["rag_merge"]?.detail?.hits?.find((h) => h.id === id);
+  return { kind: "doc", stageId: "rag_merge", doc, hit };
 }
 
 export interface StageTimelineHandle {

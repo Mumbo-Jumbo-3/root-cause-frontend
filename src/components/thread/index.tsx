@@ -8,6 +8,10 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { AssistantMessage, AssistantMessageLoading } from "./messages/ai";
 import { StageTimeline } from "./messages/stage-timeline";
+import {
+  cachedTimelineFromTrace,
+  type StageTimelineState,
+} from "@/hooks/use-stage-timeline";
 import { HumanMessage } from "./messages/human";
 import { DO_NOT_RENDER_ID_PREFIX } from "@/lib/ensure-tool-responses";
 import type { Message } from "@/lib/agent-types";
@@ -302,7 +306,6 @@ export function Thread() {
                   visible
                     .slice(lastHumanIdx + 1)
                     .some((message) => message.type === "ai");
-                const showTimeline = hasStageEvents;
                 const showFallbackLoader =
                   isLoading &&
                   !assistantStartedAfterLastHuman &&
@@ -310,8 +313,33 @@ export function Thread() {
                 const timelineCollapsed =
                   assistantStartedAfterLastHuman || !isLoading;
 
+                // Each turn shows its own trace: the live one for the latest
+                // run in this session, otherwise the trace saved on its answer.
+                const timelines = new Map<number, StageTimelineState>();
+                let turn = -1;
+                visible.forEach((message) => {
+                  if (message.type === "human") turn += 1;
+                  else if (
+                    message.type === "ai" &&
+                    message.research_trace &&
+                    !timelines.has(turn)
+                  ) {
+                    timelines.set(
+                      turn,
+                      cachedTimelineFromTrace(message.research_trace),
+                    );
+                  }
+                });
+                const lastTurn = turn;
+                if (hasStageEvents && lastHumanIdx >= 0) {
+                  timelines.set(lastTurn, stageTimeline);
+                }
+
                 const rendered: ReactNode[] = [];
+                turn = -1;
                 visible.forEach((message, index) => {
+                  if (message.type === "human") turn += 1;
+                  const timeline = timelines.get(turn) ?? null;
                   rendered.push(
                     message.type === "human" ? (
                       <HumanMessage
@@ -325,15 +353,21 @@ export function Thread() {
                         key={message.id || `${message.type}-${index}`}
                         message={message}
                         isLoading={isLoading}
+                        turn={turn}
+                        timeline={timeline}
                       />
                     ),
                   );
-                  if (index === lastHumanIdx && showTimeline) {
+                  if (message.type === "human" && timeline) {
+                    const isLive = turn === lastTurn && hasStageEvents;
                     rendered.push(
                       <StageTimeline
-                        key="stage-timeline"
-                        state={stageTimeline}
-                        defaultCollapsed={timelineCollapsed}
+                        key={
+                          isLive ? "stage-timeline" : `stage-timeline-${turn}`
+                        }
+                        state={timeline}
+                        turn={turn}
+                        defaultCollapsed={isLive ? timelineCollapsed : true}
                       />,
                     );
                   }
